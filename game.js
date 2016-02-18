@@ -37,10 +37,6 @@ evasion.Game = function(level) {
 	// create an empty label to hold the user's best score
 	lblUserHighScore = new lime.Label().setText('').setFontSize(44).setPosition(500, 0).setFontColor('#EFEFEF').setAlign('right').setAnchorPoint(0, 0);
 	this.appendChild(lblUserHighScore);
-
-	// create an empty label to hold the level number
-	lblLevel = new lime.Label().setText('').setFontSize(44).setPosition(50, 950).setFontColor('#EFEFEF').setAlign('right').setAnchorPoint(0, 0);
-	this.appendChild(lblLevel);
 	
 	// set the movement boundary for the balls (e.g. the main game area)	
 	this.ballMovementBounds = new goog.math.Box(130, this.mask.size_.width, this.mask.size_.height + 130, 0);
@@ -51,6 +47,19 @@ evasion.Game = function(level) {
 	this.topConfigLevel = 20;	// specify the top config level (e.g. difficulty)
 	this.isRoundOver = false;
 	this.targetColour;
+	this.correctObjectId;
+	
+	// define label to hold the target colour
+	this.lblTargetColour = new lime.Label().setFontSize(50).setPosition(125, 175).setFontColor('#000000').setAlign('center').setAnchorPoint(0, 0).setSize(500,150).setFontWeight(700);
+	this.appendChild(this.lblTargetColour);
+	
+	// define objects which user will be able to choose from
+	this.object1 = new lime.Sprite().setSize(500,150).setPosition(125, 275).setAnchorPoint(0,0);
+	this.object2 = new lime.Sprite().setSize(500,150).setPosition(123, 475).setAnchorPoint(0,0);
+	this.object3 = new lime.Sprite().setSize(500,150).setPosition(125, 675).setAnchorPoint(0,0);
+	this.appendChild(this.object1);
+	this.appendChild(this.object2);
+	this.appendChild(this.object3);
 	
 	// divide the level number by the top config level to ascertain the remainder, which we then use as the configLevel value
 	var remainder = this.level % this.topConfigLevel;
@@ -116,16 +125,13 @@ evasion.Game.prototype.start = function() {
 	lblUserHighScore.setText('Best: ' + this.bestScore);		
 	
 	// set label text for score
-	lblScore.setText('Score: ' + runningScore);
-	
-	// set label text for level
-	lblLevel.setText('Level: ' + this.level);	
+	lblScore.setText('Score: ' + this.score);
 	
 	// call function to add the level objects
 	this.renderLevelObjects();	
 };
 
-evasion.Game.prototype.renderLevelObjects = function(){
+evasion.Game.prototype.renderLevelObjects = function(){	
 	// degrees of difficulty:
 	// ** Neutral coloured instruction text [level 1-5]
 	// ** Correctly coloured instruction text with easy colours [level 6-10]
@@ -138,6 +144,9 @@ evasion.Game.prototype.renderLevelObjects = function(){
 	
 	// define a colour palette array with the available object colours
 	var colourPalette = [];
+	var targetColourIndex;
+	var incorrectColourIndex1;
+	var incorrectColourIndex2;
 	
 	// define easy colours
 	colourPalette.push(['Red', '#FF0000']);
@@ -152,94 +161,232 @@ evasion.Game.prototype.renderLevelObjects = function(){
 	colourPalette.push(['Maroon', '#800000']);		
 	colourPalette.push(['Pink', '#FF00FF']);
 	colourPalette.push(['Purple', '#800080']);	
-	
-	var lblTargetColor = new lime.Label().setFontSize(50).setPosition(125, 175).setFontColor('#000000').setAlign('center').setAnchorPoint(0, 0).setSize(500,150).setFontWeight(700);
-	
+			
 	// set target colour label text	
 	// set font colour of target colour label
 	if(this.level <= 5){		
 		// pick random target colour from first 3 array items and make it the correct answer colour
-		this.targetColour = colourPalette[Math.floor(Math.random() * 3)];
+		targetColourIndex = Math.floor(Math.random() * 3);
+		this.targetColour = colourPalette[targetColourIndex];
 		
 		// set text of target colour label
-		lblTargetColor.setText(this.targetColour[0]);		
+		this.lblTargetColour.setText(this.targetColour[0]);		
 	}	
 	else if(this.level > 5 && this.level <= 10){
 		// pick random target colour from first 3 array items and make it the correct answer colour
-		this.targetColour = colourPalette[Math.floor(Math.random() * 3)];
+		targetColourIndex = Math.floor(Math.random() * 3);
+		this.targetColour = colourPalette[targetColourIndex];
 		
 		// set text of target colour label
-		lblTargetColor.setText(this.targetColour[0]);
+		this.lblTargetColour.setText(this.targetColour[0]);
 		
 		// set colour of target colour label to match the colour instructed by the label
-		lblTargetColor.setFontColor(this.targetColour[1]);
+		this.lblTargetColour.setFontColor(this.targetColour[1]);
 	}
 	else if(this.level > 10 && this.level <= 20){
 		// pick random target colour from first 6 array items and make it the correct answer colour
-		this.targetColour = colourPalette[Math.floor(Math.random() * 6)];
+		targetColourIndex = Math.floor(Math.random() * 6);
+		this.targetColour = colourPalette[targetColourIndex];
 		
 		// set text of target colour label
-		lblTargetColor.setText(this.targetColour[0]);
+		this.lblTargetColour.setText(this.targetColour[0]);
 		
 		// set colour of target colour label to match the colour instructed by the label
-		lblTargetColor.setFontColor(this.targetColour[1]);
+		this.lblTargetColour.setFontColor(this.targetColour[1]);
 	}
 	else if(this.level > 20 && this.level <= 30){
 		// pick random target colour from first 10 array items and make it the correct answer colour
-		this.targetColour = colourPalette[Math.floor(Math.random() * 10)];
+		targetColourIndex = Math.floor(Math.random() * 10);
+		this.targetColour = colourPalette[targetColourIndex];
 		
 		// set text of target colour label
-		lblTargetColor.setText(this.targetColour[0]);
+		this.lblTargetColour.setText(this.targetColour[0]);
 		
 		// set colour of target colour label to match the colour instructed by the label
-		lblTargetColor.setFontColor(this.targetColour[1]);
+		this.lblTargetColour.setFontColor(this.targetColour[1]);
 	}
 	else if(this.level > 30 && this.level <= 40){
 		// pick random target colour from first 10 array items and make it the correct answer colour
-		this.targetColour = colourPalette[Math.floor(Math.random() * 10)];
+		targetColourIndex = Math.floor(Math.random() * 10);
+		this.targetColour = colourPalette[targetColourIndex];
 		
 		// set text of target colour label
-		lblTargetColor.setText(this.targetColour[0]);
+		this.lblTargetColour.setText(this.targetColour[0]);
 		
 		// set colour of target colour label to match the colour instructed by the label
-		lblTargetColor.setFontColor(colourPalette[Math.floor(Math.random() * 10)][1]);
+		this.lblTargetColour.setFontColor(colourPalette[Math.floor(Math.random() * 10)][1]);
 	}
 	
-	var object1 = new lime.Sprite().setSize(500,150).setPosition(125, 275).setAnchorPoint(0,0).setFill('#FF0000');
-	var object2 = new lime.Sprite().setSize(500,150).setPosition(123, 475).setAnchorPoint(0,0).setFill('#00FF00');
-	var object3 = new lime.Sprite().setSize(500,150).setPosition(125, 675).setAnchorPoint(0,0).setFill('#0000FF');
+	// remove target colour from colour palette array so that we can then pick 2 incorrect colours at random to assign to the other 2 interactive objects
+	colourPalette.splice(targetColourIndex, 1);
 	
-	this.appendChild(lblTargetColor);
-	this.appendChild(object1);
-	this.appendChild(object2);
-	this.appendChild(object3);
+	// pick 2 incorrect colour indexes so that we can select 2 colours from the colour palette array which are not the target colour
+	incorrectColourIndex1 = Math.floor(Math.random() * 9);
+	incorrectColourIndex2 = Math.floor(Math.random() * 9);
+
+	// TODO: Ensure that incorrectColourIndex1 and incorrectColourIndex2 cannot be the same value
 	
-	// add click events to objects
-	goog.events.listen(object1, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked, false, this);
-	goog.events.listen(object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
-	goog.events.listen(object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
+	// randomly choose the correct object of the 3 user-interactive objects
+	this.correctObjectId = (Math.floor(Math.random() * 3) + 1);
+	
+	// now that we know which objects will be correct/incorrect, go about customising the colours used, and click events attached to each object
+	switch(this.correctObjectId){
+		case 1: // object 1 will be the correct answer			
+			
+			// assign background colours to objects
+			this.object1.setFill(this.targetColour[1]);
+			this.object2.setFill(colourPalette[incorrectColourIndex1][1]);
+			this.object3.setFill(colourPalette[incorrectColourIndex2][1]);
+			
+			// assign click events to objects
+			goog.events.listen(this.object1, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked, false, this);
+			goog.events.listen(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
+			goog.events.listen(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
+			
+			break;
+		case 2: // object 2 will be the correct answer
+			
+			// assign background colours to objects
+			this.object1.setFill(colourPalette[incorrectColourIndex1][1]);
+			this.object2.setFill(this.targetColour[1]);
+			this.object3.setFill(colourPalette[incorrectColourIndex2][1]);
+			
+			// assign click events to objects
+			goog.events.listen(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
+			goog.events.listen(this.object2, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked, false, this);
+			goog.events.listen(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
+		
+			break;
+		case 3: // object 3 will be the correct answer
+			
+			// assign background colours to objects
+			this.object1.setFill(colourPalette[incorrectColourIndex1][1]);
+			this.object2.setFill(colourPalette[incorrectColourIndex2][1]);
+			this.object3.setFill(this.targetColour[1]);
+			
+			// assign click events to objects
+			goog.events.listen(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
+			goog.events.listen(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked, false, this);
+			goog.events.listen(this.object3, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked, false, this);
+		
+			break;
+	}	
 };
 
 evasion.Game.prototype.correctObjectClicked = function(e){
+	e.event.stopPropagation();
 	
-	// remove the click event from the object
-	goog.events.unlisten(e.target, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
+	// now remove the click events attached to the objects
+	this.object1.eventTargetListeners_.listeners.keydown = [];
+	this.object1.eventTargetListeners_.listeners.mousedown = [];
+	this.object1.eventTargetListeners_.listeners.touchstart = [];
+	this.object1.eventHandlers_.keydown = [];
+	this.object1.eventHandlers_.touchstart = [];
+	
+	this.object2.eventTargetListeners_.listeners.keydown = [];
+	this.object2.eventTargetListeners_.listeners.mousedown = [];
+	this.object2.eventTargetListeners_.listeners.touchstart = [];
+	this.object2.eventHandlers_.keydown = [];
+	this.object2.eventHandlers_.touchstart = [];
+	
+	this.object3.eventTargetListeners_.listeners.keydown = [];
+	this.object3.eventTargetListeners_.listeners.mousedown = [];
+	this.object3.eventTargetListeners_.listeners.touchstart = [];
+	this.object3.eventHandlers_.keydown = [];
+	this.object3.eventHandlers_.touchstart = [];
+	
+	// now remove the click events attached to the objects - commented out as not working
+	/*if(this.correctObjectId == 1){			
+		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
+		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+	}
+	else if(this.correctObjectId == 2){
+		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
+		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+	}
+	else if(this.correctObjectId == 3){
+		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
+	}*/
 	
 	// increment level number
 	this.level += 1;
 	
+	// increment score
+	this.score += 1;
+	
 	this.start();
+	
 };
 
 evasion.Game.prototype.incorrectObjectClicked = function(e){
+	e.event.stopPropagation();
 	
-	// remove the click event from the object
-	goog.events.unlisten(e.target, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+	// now remove the click events attached to the objects
+	this.object1.eventTargetListeners_.listeners.keydown = [];
+	this.object1.eventTargetListeners_.listeners.mousedown = [];
+	this.object1.eventTargetListeners_.listeners.touchstart = [];
+	this.object1.eventHandlers_.keydown = [];
+	this.object1.eventHandlers_.touchstart = [];
+	
+	this.object2.eventTargetListeners_.listeners.keydown = [];
+	this.object2.eventTargetListeners_.listeners.mousedown = [];
+	this.object2.eventTargetListeners_.listeners.touchstart = [];
+	this.object2.eventHandlers_.keydown = [];
+	this.object2.eventHandlers_.touchstart = [];
+	
+	this.object3.eventTargetListeners_.listeners.keydown = [];
+	this.object3.eventTargetListeners_.listeners.mousedown = [];
+	this.object3.eventTargetListeners_.listeners.touchstart = [];
+	this.object3.eventHandlers_.keydown = [];
+	this.object3.eventHandlers_.touchstart = [];
+	
+	// now remove the click events attached to the objects - commented out as not working	
+	/*if(this.correctObjectId == 1){
+		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
+		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+	}
+	else if(this.correctObjectId == 2){
+		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
+		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+	}
+	else if(this.correctObjectId == 3){
+		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
+		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
+	}*/
+	
+	// game over
+	this.gameOver();
+	
+	// reload main menu*/
+};
+
+evasion.Game.prototype.gameOver = function(){
+	// remove the objects from the game	
+	this.removeChild(this.lblTargetColour);
+	this.removeChild(this.object1);
+	this.removeChild(this.object2);
+	this.removeChild(this.object3);
 	
 	// show game over screen
-	
-	// reload main menu
-};
+	var gameOverDialog = evasion.dialogs.box4(this.score);								
+	this.cover.appendChild(gameOverDialog);
+	evasion.dialogs.appear(gameOverDialog);
+					
+	// 4 sceond timer
+	lime.scheduleManager.callAfter(function(){
+		
+		// restart the game which will kick the player back to the main menu
+		location.reload();
+						
+	}, this, 4000);
+}
 
 evasion.Game.prototype.showHowToPlay = function(){
 	var show = new lime.animation.MoveBy(0, 50).setDuration(2);
