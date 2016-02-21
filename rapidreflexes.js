@@ -1,60 +1,40 @@
-/* 
-* 30 second round timer, starts when the first sticky ball is placed
-* User places sticky ball(s) and timer starts
-* Round ends on round timer end, or all balls captured
-* Scoring:
-	* 1pt per second round runs for
-	* 5pts per ball left alive at round end
-
-TODO:
-
-*/
-
 //set main namespace
-goog.provide('evasion');
+goog.provide('rapidreflexes');
 
 //get requirements
 goog.require('lime.Director');
 goog.require('lime.Scene');
 goog.require('lime.Layer');  
-goog.require('lime.Circle');
 goog.require('lime.GlossyButton');
-goog.require('lime.animation.FadeTo');
-goog.require('lime.animation.Loop');
-goog.require('lime.animation.MoveBy');
-goog.require('lime.animation.ScaleTo');
 goog.require('lime.animation.Sequence');
 goog.require('lime.animation.Spawn');
 goog.require('lime.transitions.MoveInUp');
 goog.require('lime.transitions.Dissolve');
 	
 // pull in custom js files
-goog.require('evasion.ball');
-goog.require('evasion.stickyBall');
-goog.require('evasion.Game');
-
+goog.require('rapidreflexes.Game');
 
 var director;
 var runningScore = 0;
 
-evasion.WIDTH = 768;
-evasion.HEIGHT = 1004;
-evasion.UserBestScore;
-evasion.DeviceGUID;
+rapidreflexes.WIDTH = 768;
+rapidreflexes.HEIGHT = 1004;
+rapidreflexes.UserBestScore;
+rapidreflexes.DeviceGUID;
 
 // entrypoint
-evasion.start = function(){
+rapidreflexes.start = function(){
 	var gameScene;
 	var mainMenuScene;
 										
-	evasion.director = new lime.Director(document.body,evasion.WIDTH, evasion.HEIGHT);
-	evasion.director.makeMobileWebAppCapable();
+	rapidreflexes.director = new lime.Director(document.body,rapidreflexes.WIDTH, rapidreflexes.HEIGHT);
+	rapidreflexes.director.makeMobileWebAppCapable();
 
 	// check localstorage to see if a device GUID has been created for this device
-	evasion.DeviceGUID = localStorage.getItem('DeviceGUID');
+	rapidreflexes.DeviceGUID = localStorage.getItem('DeviceGUID');
 	
 	// if no GUID found then create one and store it in localstorage
-	if(evasion.DeviceGUID == null){
+	if(rapidreflexes.DeviceGUID == null){
 		
 		// set device GUID property
 		this.DeviceGUID = this.generateGuid();
@@ -64,14 +44,14 @@ evasion.start = function(){
 	}	
 	
 	// build the main menu scene
-	evasion.loadMenuScene();	
+	rapidreflexes.loadMenuScene();	
 }
 
-evasion.loadMenuScene = function(opt_transition){
+rapidreflexes.loadMenuScene = function(opt_transition){
 	var scene = new lime.Scene();
-    evasion.director.replaceScene(scene, opt_transition ? lime.transitions.MoveInDown : undefined);
+    rapidreflexes.director.replaceScene(scene, opt_transition ? lime.transitions.MoveInDown : undefined);
 
-    var layer = new lime.Layer().setPosition(evasion.WIDTH * .5, 0);
+    var layer = new lime.Layer().setPosition(rapidreflexes.WIDTH * .5, 0);
     scene.appendChild(layer);
 
     var menuLogo = new lime.Sprite().setPosition(0, 250).setFill('images/512x512.png');
@@ -110,24 +90,24 @@ evasion.loadMenuScene = function(opt_transition){
     levels.appendChild(btns_layer);
 	
 	// get this person's highest score from local storage
-	evasion.UserBestScore = evasion.getBestScore();
+	rapidreflexes.UserBestScore = rapidreflexes.getBestScore();
 	
 	// submit this person's highest score to scoreboard API just incase it has never been uploaded before
-	//scoreboard.SubmitScore(evasion.UserBestScore, this.DeviceGUID, 'StickyBalls');
+	//scoreboard.SubmitScore(rapidreflexes.UserBestScore, this.DeviceGUID, 'StickyBalls');
 	   
 	// add listen to how to play button
 	goog.events.listen(btnHowToPlay, ['touchstart', 'mousedown'], function(e) {
 		e.event.stopPropagation();
 		
 		// pass in level 0 which means show the how to play screen
-		evasion.loadGame(0);
+		rapidreflexes.loadGame(0);
 	});
 	
 	// add listener to background for game start action
 	goog.events.listen(btnStart, ['touchstart', 'mousedown'], function(e) {
 		e.event.stopPropagation();
 		
-		evasion.loadGame(1);
+		rapidreflexes.loadGame(1);
 	});
 	
 	// add listener to background for global leaderboard action
@@ -135,17 +115,17 @@ evasion.loadMenuScene = function(opt_transition){
 		e.event.stopPropagation();
 		
 		// pass in level -1 which means show the global leaderboard screen
-		evasion.loadGame(-1);
+		rapidreflexes.loadGame(-1);
 	});
 }
 
-evasion.loadGame = function(level){	
-	evasion.activeGame = new evasion.Game(level);
-	evasion.director.replaceScene(evasion.activeGame, lime.transitions.Dissolve);
+rapidreflexes.loadGame = function(level){	
+	rapidreflexes.activeGame = new rapidreflexes.Game(level);
+	rapidreflexes.director.replaceScene(rapidreflexes.activeGame, lime.transitions.Dissolve);
 }
 
 // retrieve best score stored in local storage
-evasion.getBestScore = function(){
+rapidreflexes.getBestScore = function(){
 	var scoreRetrieved = localStorage.getItem("UserBestScore");
 	
 	if(scoreRetrieved != null){
@@ -157,7 +137,7 @@ evasion.getBestScore = function(){
 }
 
 // generates a unique ID for the device
-evasion.generateGuid = function(){
+rapidreflexes.generateGuid = function(){
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   }
@@ -165,4 +145,4 @@ evasion.generateGuid = function(){
 }
 
 //this is required for outside access after code is compiled in ADVANCED_COMPILATIONS mode
-goog.exportSymbol('evasion.start', evasion.start);
+goog.exportSymbol('rapidreflexes.start', rapidreflexes.start);

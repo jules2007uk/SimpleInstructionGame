@@ -1,16 +1,12 @@
-goog.provide('evasion.Game');
-
+goog.provide('rapidreflexes.Game');
 goog.require('lime.GlossyButton');
 goog.require('lime.Layer');
 goog.require('lime.Scene');
-goog.require('lime.animation.FadeTo');
 goog.require('lime.animation.MoveTo');
-goog.require('lime.animation.ScaleBy');
-goog.require('lime.animation.Spawn');
 goog.require('lime.CanvasContext');
-goog.require('evasion.dialogs');
+goog.require('rapidreflexes.dialogs');
 
-evasion.Game = function(level) {
+rapidreflexes.Game = function(level) {
     lime.Scene.call(this);
 	lime.Renderer.CANVAS;
 	
@@ -19,7 +15,7 @@ evasion.Game = function(level) {
 	this.level = level;	
 	this.bestScore = 0;
 	
-	this.mask = new lime.Sprite().setFill(new lime.fill.LinearGradient().addColorStop(0.5, 256, 256, 256, .5).addColorStop(0.8, 230, 230, 230, .5)).setSize(768, 760).setAnchorPoint(0, 0).setPosition(0, 130);
+	this.mask = new lime.Sprite().setFill(new lime.fill.LinearGradient().addColorStop(0.5, 206, 206, 206, .5).addColorStop(0.8, 170, 170, 170, .5)).setSize(768, 760).setAnchorPoint(0, 0).setPosition(0, 130);
     this.appendChild(this.mask);	
 	this.mask = new lime.Sprite().setSize(768, 760).setAnchorPoint(0, 0).setPosition(0, 130);
     this.appendChild(this.mask);	
@@ -27,8 +23,12 @@ evasion.Game = function(level) {
     this.appendChild(this.layer);
     this.layer.setMask(this.mask);
     this.layer.setOpacity(.5);	
-	this.cover = new lime.Layer().setPosition(evasion.director.getSize().width / 2, 0);
-    this.appendChild(this.cover);	
+	this.cover = new lime.Layer().setPosition(rapidreflexes.director.getSize().width / 2, 0);
+    this.appendChild(this.cover);
+	
+	// add progress bar
+	this.progressBar = new lime.Sprite().setSize(768, 20).setPosition(-768, 871).setAnchorPoint(0,0).setFill(new lime.fill.LinearGradient().addColorStop(0.5, 205, 244, 85, .5).addColorStop(0.8, 166, 220, 0, .5));
+	this.appendChild(this.progressBar);
 	
 	// create an empty label to hold the score
 	lblScore = new lime.Label().setText('').setFontSize(44).setPosition(50, 0).setFontColor('#EFEFEF').setAlign('right').setAnchorPoint(0, 0);
@@ -42,10 +42,7 @@ evasion.Game = function(level) {
 	this.ballMovementBounds = new goog.math.Box(130, this.mask.size_.width, this.mask.size_.height + 130, 0);
 	
 	// game config properties	
-	this.score = 0;
-	this.configLevelNumber = 0; // to hold the config level (e.g. difficulty)
-	this.topConfigLevel = 20;	// specify the top config level (e.g. difficulty)
-	this.isRoundOver = false;
+	this.score = 0;	
 	this.targetColour;
 	this.correctObjectId;
 	
@@ -54,35 +51,13 @@ evasion.Game = function(level) {
 	this.appendChild(this.lblTargetColour);
 	
 	// define objects which user will be able to choose from
-	this.object1 = new lime.Sprite().setSize(500,150).setPosition(125, 275).setAnchorPoint(0,0);
-	this.object2 = new lime.Sprite().setSize(500,150).setPosition(123, 475).setAnchorPoint(0,0);
-	this.object3 = new lime.Sprite().setSize(500,150).setPosition(125, 675).setAnchorPoint(0,0);
-	this.appendChild(this.object1);
-	this.appendChild(this.object2);
-	this.appendChild(this.object3);
-	
-	// divide the level number by the top config level to ascertain the remainder, which we then use as the configLevel value
-	var remainder = this.level % this.topConfigLevel;
-	
-	// if the remainder is 0
-	if(remainder == 0){
-		// this means that the current level is the top level achievable, therefore set config level to 
-		this.configLevelNumber = this.topConfigLevel;
-	}
-	else{
-		// else set the config level number to be the remainder value
-		// (e.g. remainder would be 6 if level was 26 and top config level was 20)
-		this.configLevelNumber = remainder;
-	}	
+	this.object1 = new lime.Sprite().setSize(500,150).setPosition(125, 275).setAnchorPoint(0,0).setStroke(5, '#444A4E');
+	this.object2 = new lime.Sprite().setSize(500,150).setPosition(123, 475).setAnchorPoint(0,0).setStroke(5, '#444A4E');
+	this.object3 = new lime.Sprite().setSize(500,150).setPosition(125, 675).setAnchorPoint(0,0).setStroke(5, '#444A4E');
 		
-	
-	if(this.configLevelNumber <= 10){
-		
-	}
-	else{
-		
-	}
-	
+	// create objects overlay which adds a transparent reflection image to the objects
+	this.objectsOverlay = new lime.Sprite().setFill('images/objects-reflection-overlay.png').setSize(768, 760).setAnchorPoint(0, 0).setPosition(0, 130);
+    		
     // the level number tells us to display either the level, the how to play, or global leaderboard screens respectively
 	if(this.level == 0){
 		this.showHowToPlay();
@@ -92,14 +67,13 @@ evasion.Game = function(level) {
 	}
 	else if (this.level > 0) {
 		this.start();
-	}
-	
+	}	
 }
 
-goog.inherits(evasion.Game,lime.Scene);
+goog.inherits(rapidreflexes.Game,lime.Scene);
 
 // retrieve best score stored in local storage
-evasion.Game.prototype.getBestScore = function(){
+rapidreflexes.Game.prototype.getBestScore = function(){
 	var scoreRetrieved = localStorage.getItem("UserBestScore");
 	
 	if(scoreRetrieved != null){
@@ -111,12 +85,12 @@ evasion.Game.prototype.getBestScore = function(){
 }
 
 // set best score in local storage
-evasion.Game.prototype.setBestScore = function(scoreToAdd){	
-	localStorage.setItem("UserBestScore", scoreToAdd);
+rapidreflexes.Game.prototype.setBestScore = function(){	
+	localStorage.setItem("UserBestScore", this.score);
 }
 
 // start the game
-evasion.Game.prototype.start = function() {	
+rapidreflexes.Game.prototype.start = function() {	
 	
 	// get user's high score from localStorage
 	this.bestScore = this.getBestScore();
@@ -127,17 +101,19 @@ evasion.Game.prototype.start = function() {
 	// set label text for score
 	lblScore.setText('Score: ' + this.score);
 	
+	// reset progress bar
+	this.progressBar.setPosition(-768, 871);
+	
 	// call function to add the level objects
 	this.renderLevelObjects();	
 };
 
-evasion.Game.prototype.renderLevelObjects = function(){	
+rapidreflexes.Game.prototype.renderLevelObjects = function(){	
 	// degrees of difficulty:
-	// ** Neutral coloured instruction text [level 1-5]
-	// ** Correctly coloured instruction text with easy colours [level 6-10]
-	// ** Correctly coloured instruction text with easy + medium colours [level 11-20]
-	// ** Correctly coloured instruction text with easy + medium + hard colours [level 21-30]
-	// ** Wrongly coloured instruction text with easy + medium + difficult colours [level 31-40]
+	// ** Neutral coloured instruction text [level 1-15]
+	// ** Wrongly coloured instruction text with easy + medium + difficult colours [level 16-40]
+	
+	// TODO: Not yet implemented difficult levels
 	// * Objects with correct colour written as text on object [level 41-45]
 	// * Objects with incorrect colour written as text on object [level 46-55]
 	// * Occassions where correct answer is click nothing (e.g. colour does not exist amongst objects) [level 55+]
@@ -164,48 +140,15 @@ evasion.Game.prototype.renderLevelObjects = function(){
 			
 	// set target colour label text	
 	// set font colour of target colour label
-	if(this.level <= 5){		
+	if(this.level <= 15){		
 		// pick random target colour from first 3 array items and make it the correct answer colour
 		targetColourIndex = Math.floor(Math.random() * 3);
 		this.targetColour = colourPalette[targetColourIndex];
 		
 		// set text of target colour label
 		this.lblTargetColour.setText(this.targetColour[0]);		
-	}	
-	else if(this.level > 5 && this.level <= 10){
-		// pick random target colour from first 3 array items and make it the correct answer colour
-		targetColourIndex = Math.floor(Math.random() * 3);
-		this.targetColour = colourPalette[targetColourIndex];
-		
-		// set text of target colour label
-		this.lblTargetColour.setText(this.targetColour[0]);
-		
-		// set colour of target colour label to match the colour instructed by the label
-		this.lblTargetColour.setFontColor(this.targetColour[1]);
 	}
-	else if(this.level > 10 && this.level <= 20){
-		// pick random target colour from first 6 array items and make it the correct answer colour
-		targetColourIndex = Math.floor(Math.random() * 6);
-		this.targetColour = colourPalette[targetColourIndex];
-		
-		// set text of target colour label
-		this.lblTargetColour.setText(this.targetColour[0]);
-		
-		// set colour of target colour label to match the colour instructed by the label
-		this.lblTargetColour.setFontColor(this.targetColour[1]);
-	}
-	else if(this.level > 20 && this.level <= 30){
-		// pick random target colour from first 10 array items and make it the correct answer colour
-		targetColourIndex = Math.floor(Math.random() * 10);
-		this.targetColour = colourPalette[targetColourIndex];
-		
-		// set text of target colour label
-		this.lblTargetColour.setText(this.targetColour[0]);
-		
-		// set colour of target colour label to match the colour instructed by the label
-		this.lblTargetColour.setFontColor(this.targetColour[1]);
-	}
-	else if(this.level > 30 && this.level <= 40){
+	else if(this.level > 15){
 		// pick random target colour from first 10 array items and make it the correct answer colour
 		targetColourIndex = Math.floor(Math.random() * 10);
 		this.targetColour = colourPalette[targetColourIndex];
@@ -224,7 +167,10 @@ evasion.Game.prototype.renderLevelObjects = function(){
 	incorrectColourIndex1 = Math.floor(Math.random() * 9);
 	incorrectColourIndex2 = Math.floor(Math.random() * 9);
 
-	// TODO: Ensure that incorrectColourIndex1 and incorrectColourIndex2 cannot be the same value
+	// ensure that incorrectColourIndex1 and incorrectColourIndex2 cannot be the same value
+	while(incorrectColourIndex1 == incorrectColourIndex2){
+		incorrectColourIndex2 = Math.floor(Math.random() * 9);
+	}
 	
 	// randomly choose the correct object of the 3 user-interactive objects
 	this.correctObjectId = (Math.floor(Math.random() * 3) + 1);
@@ -271,46 +217,32 @@ evasion.Game.prototype.renderLevelObjects = function(){
 		
 			break;
 	}	
+	
+	// add the game objects
+	this.appendChild(this.object1);
+	this.appendChild(this.object2);
+	this.appendChild(this.object3);
+	
+	// add objects overlay transparent reflection image
+	this.appendChild(this.objectsOverlay);
+	
+	// now add a 1 second timer for the round, except for the first round
+	if(this.level > 1){
+		lime.scheduleManager.scheduleWithDelay(this.gameOver, this, 1000);
+		
+		// animate progress bar
+		this.progressBar.runAction(new lime.animation.MoveBy(768, 0).setDuration(1));
+	}		
 };
 
-evasion.Game.prototype.correctObjectClicked = function(e){
+rapidreflexes.Game.prototype.correctObjectClicked = function(e){
 	e.event.stopPropagation();
 	
-	// now remove the click events attached to the objects
-	this.object1.eventTargetListeners_.listeners.keydown = [];
-	this.object1.eventTargetListeners_.listeners.mousedown = [];
-	this.object1.eventTargetListeners_.listeners.touchstart = [];
-	this.object1.eventHandlers_.keydown = [];
-	this.object1.eventHandlers_.touchstart = [];
+	// cancel the round timer
+	lime.scheduleManager.unschedule(this.gameOver, this);
 	
-	this.object2.eventTargetListeners_.listeners.keydown = [];
-	this.object2.eventTargetListeners_.listeners.mousedown = [];
-	this.object2.eventTargetListeners_.listeners.touchstart = [];
-	this.object2.eventHandlers_.keydown = [];
-	this.object2.eventHandlers_.touchstart = [];
-	
-	this.object3.eventTargetListeners_.listeners.keydown = [];
-	this.object3.eventTargetListeners_.listeners.mousedown = [];
-	this.object3.eventTargetListeners_.listeners.touchstart = [];
-	this.object3.eventHandlers_.keydown = [];
-	this.object3.eventHandlers_.touchstart = [];
-	
-	// now remove the click events attached to the objects - commented out as not working
-	/*if(this.correctObjectId == 1){			
-		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
-		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
-		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
-	}
-	else if(this.correctObjectId == 2){
-		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
-		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
-		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
-	}
-	else if(this.correctObjectId == 3){
-		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
-		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
-		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
-	}*/
+	// remove click event handlers
+	this.removeObjectHandlers();
 	
 	// increment level number
 	this.level += 1;
@@ -318,13 +250,24 @@ evasion.Game.prototype.correctObjectClicked = function(e){
 	// increment score
 	this.score += 1;
 	
-	this.start();
-	
+	// start the next level
+	this.start();	
 };
 
-evasion.Game.prototype.incorrectObjectClicked = function(e){
+rapidreflexes.Game.prototype.incorrectObjectClicked = function(e){
 	e.event.stopPropagation();
 	
+	// cancel the round timer
+	lime.scheduleManager.unschedule(this.gameOver, this);
+	
+	// remove click event handlers
+	this.removeObjectHandlers();
+	
+	// game over
+	this.gameOver();
+};
+
+rapidreflexes.Game.prototype.removeObjectHandlers = function(){
 	// now remove the click events attached to the objects
 	this.object1.eventTargetListeners_.listeners.keydown = [];
 	this.object1.eventTargetListeners_.listeners.mousedown = [];
@@ -344,7 +287,7 @@ evasion.Game.prototype.incorrectObjectClicked = function(e){
 	this.object3.eventHandlers_.keydown = [];
 	this.object3.eventHandlers_.touchstart = [];
 	
-	// now remove the click events attached to the objects - commented out as not working	
+	// commented out as not working	
 	/*if(this.correctObjectId == 1){
 		goog.events.unlisten(this.object1, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
 		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
@@ -360,24 +303,26 @@ evasion.Game.prototype.incorrectObjectClicked = function(e){
 		goog.events.unlisten(this.object2, ['mousedown', 'touchstart', 'keydown'], this.incorrectObjectClicked);
 		goog.events.unlisten(this.object3, ['mousedown', 'touchstart', 'keydown'], this.correctObjectClicked);
 	}*/
-	
-	// game over
-	this.gameOver();
-	
-	// reload main menu*/
-};
+}
 
-evasion.Game.prototype.gameOver = function(){
+rapidreflexes.Game.prototype.gameOver = function(){
 	// remove the objects from the game	
 	this.removeChild(this.lblTargetColour);
 	this.removeChild(this.object1);
 	this.removeChild(this.object2);
 	this.removeChild(this.object3);
+	this.removeChild(this.objectsOverlay);
 	
 	// show game over screen
-	var gameOverDialog = evasion.dialogs.box4(this.score);								
+	var gameOverDialog = rapidreflexes.dialogs.box4(this.score);								
 	this.cover.appendChild(gameOverDialog);
-	evasion.dialogs.appear(gameOverDialog);
+	rapidreflexes.dialogs.appear(gameOverDialog);
+	
+	// if the current score is better than the best score stored in local storage
+	if(this.score > this.bestScore){
+		// update the best score in local storage
+		this.setBestScore();
+	}
 					
 	// 4 sceond timer
 	lime.scheduleManager.callAfter(function(){
@@ -388,50 +333,29 @@ evasion.Game.prototype.gameOver = function(){
 	}, this, 4000);
 }
 
-evasion.Game.prototype.showHowToPlay = function(){
+rapidreflexes.Game.prototype.showHowToPlay = function(){
 	var show = new lime.animation.MoveBy(0, 50).setDuration(2);
-	var box = evasion.dialogs.box1();
+	var box = rapidreflexes.dialogs.box3();
 	this.cover.appendChild(box);
-	var that = this;    
+	var that = this;  
 	
-	//goog.events.listen(show, lime.animation.Event.STOP, function() {
-        evasion.dialogs.appear(box);
-
-        var box2 = evasion.dialogs.box2();
-        evasion.dialogs.hide(box, function() {
-            that.cover.removeChild(box);
-            that.cover.appendChild(box2);
-            evasion.dialogs.appear(box2);
-
-            var box3 = evasion.dialogs.box3(that);
-            evasion.dialogs.hide(box2, function() {
-                that.cover.removeChild(box2);
-                that.cover.appendChild(box3);
-                evasion.dialogs.appear(box3);
-
-                evasion.dialogs.hide(box3, function() {
-                    that.cover.removeChild(box3);
-                    that.cover.removeChild(lblScore);
-                    location.reload();
-                }, 11);
-
-            }, 7);
-
-        }, 11);				
-    //});
+	rapidreflexes.dialogs.appear(box);	
+	rapidreflexes.dialogs.hide(box, function() {		
+		location.reload();
+	}, 10);	  
 }
 
 // function to show the global leaderboard popup screen
-evasion.Game.prototype.showGlobalLeaderboard = function () {
+rapidreflexes.Game.prototype.showGlobalLeaderboard = function () {
     var show = new lime.animation.MoveBy(0, 50).setDuration(2);
-    var box = evasion.dialogs.box5();
+    var box = rapidreflexes.dialogs.box5();
     this.cover.appendChild(box);
     var that = this;
     
     // show the box
-    evasion.dialogs.appear(box);
+    rapidreflexes.dialogs.appear(box);
 	
-	evasion.dialogs.hide(box, function() {
+	rapidreflexes.dialogs.hide(box, function() {
 		that.cover.removeChild(box);		
 		location.reload();
 	}, 12);
@@ -445,31 +369,7 @@ evasion.Game.prototype.showGlobalLeaderboard = function () {
 	});
 }
 
-// update the player's score
-evasion.Game.prototype.updateScore = function(){
-	// each non-captured ball is worth 5pts, and catching all balls is worth an extra 25pts	
-	var totalNumberBalls = this.balls.length;
-	var actualNumberLiveBalls = 0;	
-	
-	for(i = 0; i < totalNumberBalls; i++){		
-		if(!this.balls[i].isCaught){
-			actualNumberLiveBalls += 1;
-		}
-	}
-	
-	// add 5pts for each live ball
-	this.score += (actualNumberLiveBalls * 50);
-	
-	// if player has caught all available balls then add an extra 25pts
-	if(totalNumberBalls == actualNumberLiveBalls){
-		this.score += 25;
-	}
-	
-	runningScore += this.score;
-	
-}
-
-evasion.Game.prototype.addModalMessage = function(doAddCloseHandler, message, title, message2, message3){
+rapidreflexes.Game.prototype.addModalMessage = function(doAddCloseHandler, message, title, message2, message3){
 		
 	// add transparent background to capture tap event - used for closing the modal
 	var modalBackground = new lime.Sprite().setSize(gameObj.width, gameObj.height).setFill(menuHexColour).setAnchorPoint(0,0).setOpacity(0.5);
@@ -508,9 +408,3 @@ evasion.Game.prototype.addModalMessage = function(doAddCloseHandler, message, ti
 		});
 	}
 }
-
-// quick function to determine if a number passed in is odd or even
-isOdd = function(num){ 
-	return num % 2;
-}
- 
