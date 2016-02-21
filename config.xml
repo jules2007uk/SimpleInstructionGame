@@ -5,7 +5,7 @@ xmlns:gap = "http://phonegap.com/ns/1.0"
 id = "Rapid Reflexes"
 version = "1.0.0">
 
-<name>Sticky Balls</name>
+<name>Rapid Reflexes</name>
 <description></description>
 <preference name="phonegap-version" value="cli-5.2.0" />
 
