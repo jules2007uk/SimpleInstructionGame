@@ -1,6 +1,6 @@
 /* 
 * Author:	Julian Willing
-* Date:		25/01/2016
+* Date:		24/02/2016
 * Desc:		Client API handler for ScoreboardAPI
 */
 
@@ -14,7 +14,7 @@ scoreboard.GetHighScores = function(){
 	// because this is an asynchronous call we use javascript promise so that the calling function can wait until the function returns a response
 	return new Promise(function(resolve, reject) {	
 	
-		var url = 'http://jwistickyBalldesign.co.uk/WordWalkScoreboardAPI/API/scores?gameName=stickyballs&numberOfScores=5';		
+		var url = 'http://jwiwebdesign.co.uk/WordWalkScoreboardAPI/API/scores?gameName=rapidreflexes&numberOfScores=5';		
 		var xhr = createCORSRequest('GET', url);
 		
 		/* Response handlers *********************/
@@ -43,7 +43,7 @@ scoreboard.GetHighScores = function(){
 
 // submits a new score to the scoreboard API
 scoreboard.SubmitScore = function(playerScore, playerId, gameName){
-	var url = 'http://jwistickyBalldesign.co.uk/WordWalkScoreboardAPI/API/scores?playerScore=' + playerScore + '&playerId=' + playerId + '&gameName=' + gameName;
+	var url = 'http://jwiwebdesign.co.uk/WordWalkScoreboardAPI/API/scores?playerScore=' + playerScore + '&playerId=' + playerId + '&gameName=' + gameName;
 	
 	var xhr = createCORSRequest('POST', url);
 	

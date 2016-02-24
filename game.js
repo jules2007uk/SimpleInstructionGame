@@ -8,34 +8,37 @@ goog.require('rapidreflexes.dialogs');
 
 rapidreflexes.Game = function(level) {
     lime.Scene.call(this);
-	lime.Renderer.CANVAS;
+	lime.Renderer.DOM;
 	
-	this.setRenderer(lime.Renderer.CANVAS);	
+	this.setRenderer(lime.Renderer.DOM);	
 	this.WIDTH = 600;      
 	this.level = level;	
 	this.bestScore = 0;
 	
-	this.mask = new lime.Sprite().setFill(new lime.fill.LinearGradient().addColorStop(0.5, 206, 206, 206, .5).addColorStop(0.8, 170, 170, 170, .5)).setSize(768, 760).setAnchorPoint(0, 0).setPosition(0, 130);
+	this.mask = new lime.Sprite().setSize(768, 760).setAnchorPoint(0, 0).setPosition(0, 130);
     this.appendChild(this.mask);	
 	this.mask = new lime.Sprite().setSize(768, 760).setAnchorPoint(0, 0).setPosition(0, 130);
     this.appendChild(this.mask);	
 	this.layer = new lime.Layer();    
     this.appendChild(this.layer);
     this.layer.setMask(this.mask);
-    this.layer.setOpacity(.5);	
+    this.layer.setOpacity(0.5);	
 	this.cover = new lime.Layer().setPosition(rapidreflexes.director.getSize().width / 2, 0);
     this.appendChild(this.cover);
 	
+	this.progressBarLimit = new lime.Sprite().setSize(768, 20).setPosition(0, 100).setAnchorPoint(0,0).setFill('#20A2D6').setHidden(true);
+	this.appendChild(this.progressBarLimit);
+	
 	// add progress bar
-	this.progressBar = new lime.Sprite().setSize(768, 20).setPosition(-768, 871).setAnchorPoint(0,0).setFill(new lime.fill.LinearGradient().addColorStop(0.5, 205, 244, 85, .5).addColorStop(0.8, 166, 220, 0, .5));
+	this.progressBar = new lime.Sprite().setSize(768, 20).setPosition(-768, 100).setAnchorPoint(0,0).setFill(new lime.fill.LinearGradient().addColorStop(0.5, 205, 244, 85, .5).addColorStop(0.8, 166, 220, 0, .5));
 	this.appendChild(this.progressBar);
 	
 	// create an empty label to hold the score
-	lblScore = new lime.Label().setText('').setFontSize(44).setPosition(50, 0).setFontColor('#EFEFEF').setAlign('right').setAnchorPoint(0, 0);
+	lblScore = new lime.Label().setText('').setFontSize(64).setPosition(50, 0).setFontColor('#EFEFEF').setAlign('left').setAnchorPoint(0, 0).setFontFamily('AmaticBold').setSize(500,100);
     this.appendChild(lblScore);
 	
 	// create an empty label to hold the user's best score
-	lblUserHighScore = new lime.Label().setText('').setFontSize(44).setPosition(500, 0).setFontColor('#EFEFEF').setAlign('right').setAnchorPoint(0, 0);
+	lblUserHighScore = new lime.Label().setText('').setFontSize(64).setPosition(550, 0).setFontColor('#EFEFEF').setAlign('left').setAnchorPoint(0, 0).setFontFamily('AmaticBold').setSize(200,100);
 	this.appendChild(lblUserHighScore);
 	
 	// set the movement boundary for the balls (e.g. the main game area)	
@@ -47,7 +50,7 @@ rapidreflexes.Game = function(level) {
 	this.correctObjectId;
 	
 	// define label to hold the target colour
-	this.lblTargetColour = new lime.Label().setFontSize(50).setPosition(125, 175).setFontColor('#000000').setAlign('center').setAnchorPoint(0, 0).setSize(500,150).setFontWeight(700);
+	this.lblTargetColour = new lime.Label().setFontSize(70).setPosition(125, 175).setFontColor('#000000').setAlign('center').setAnchorPoint(0, 0).setSize(500,150).setFontWeight(700).setFontFamily('AmaticBold').setText('');
 	this.appendChild(this.lblTargetColour);
 	
 	// define objects which user will be able to choose from
@@ -102,7 +105,8 @@ rapidreflexes.Game.prototype.start = function() {
 	lblScore.setText('Score: ' + this.score);
 	
 	// reset progress bar
-	this.progressBar.setPosition(-768, 871);
+	this.progressBar.setPosition(-768, 100);	
+	this.progressBarLimit.setHidden(false);
 	
 	// call function to add the level objects
 	this.renderLevelObjects();	

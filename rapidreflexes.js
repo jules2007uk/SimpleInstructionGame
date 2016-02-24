@@ -29,6 +29,9 @@ rapidreflexes.start = function(){
 										
 	rapidreflexes.director = new lime.Director(document.body,rapidreflexes.WIDTH, rapidreflexes.HEIGHT);
 	rapidreflexes.director.makeMobileWebAppCapable();
+	
+	// install fonts
+	rapidreflexes.installFonts();
 
 	// check localstorage to see if a device GUID has been created for this device
 	rapidreflexes.DeviceGUID = localStorage.getItem('DeviceGUID');
@@ -47,6 +50,11 @@ rapidreflexes.start = function(){
 	rapidreflexes.loadMenuScene();	
 }
 
+// install all game fonts
+rapidreflexes.installFonts = function(){
+	lime.Label.installFont('AmaticBold', 'fonts/Amatic-Bold.ttf');
+}
+
 rapidreflexes.loadMenuScene = function(opt_transition){
 	var scene = new lime.Scene();
     rapidreflexes.director.replaceScene(scene, opt_transition ? lime.transitions.MoveInDown : undefined);
@@ -57,22 +65,22 @@ rapidreflexes.loadMenuScene = function(opt_transition){
     var menuLogo = new lime.Sprite().setPosition(0, 250).setFill('images/512x512.png');
     layer.appendChild(menuLogo);
 	
-	var btnStart = new lime.GlossyButton().setText('Start').setPosition(0, 625).setColor('#EFEFEF').setSize(500,100).setFontSize(30);
-	btnStart.upstate.label.setSize(600,30);
-	btnStart.downstate.label.setSize(600,30);
+	var btnStart = new lime.GlossyButton().setText('Start').setPosition(0, 625).setColor('#EFEFEF').setSize(500,100).setFontSize(50).setFontFamily('AmaticBold');
+	btnStart.upstate.label.setSize(600,50);
+	btnStart.downstate.label.setSize(600,50);
 	layer.appendChild(btnStart);
 	
-	var btnHowToPlay = new lime.GlossyButton().setText('How to play').setPosition(0, 750).setColor('#EFEFEF').setSize(500,100).setFontSize(30);
-	btnHowToPlay.upstate.label.setSize(600,30);
-	btnHowToPlay.downstate.label.setSize(600,30);
+	var btnHowToPlay = new lime.GlossyButton().setText('How to play').setPosition(0, 750).setColor('#EFEFEF').setSize(500,100).setFontSize(50).setFontFamily('AmaticBold');
+	btnHowToPlay.upstate.label.setSize(600,50);
+	btnHowToPlay.downstate.label.setSize(600,50);
 	layer.appendChild(btnHowToPlay);
 	
-	var btnGlobalLeaderboard = new lime.GlossyButton().setText('Global leaderboard').setPosition(0, 875).setColor('#EFEFEF').setSize(500,100).setFontSize(30);
-    btnGlobalLeaderboard.upstate.label.setSize(600,30);
-	btnGlobalLeaderboard.downstate.label.setSize(600,30);
+	var btnGlobalLeaderboard = new lime.GlossyButton().setText('Global leaderboard').setPosition(0, 875).setColor('#EFEFEF').setSize(500,100).setFontSize(50).setFontFamily('AmaticBold');
+    btnGlobalLeaderboard.upstate.label.setSize(600,50);
+	btnGlobalLeaderboard.downstate.label.setSize(600,50);
 	layer.appendChild(btnGlobalLeaderboard);	
 		
-    var mask = new lime.Sprite().setSize(620, 560).setFill('#c00').setAnchorPoint(0.5, 0).setPosition(0, 410);
+    var mask = new lime.Sprite().setSize(620, 560).setFill('#20A2D6').setAnchorPoint(0.5, 0).setPosition(0, 410);
     layer.appendChild(mask);
 
     var contents = new lime.Layer().setPosition(0, 280);
@@ -93,7 +101,7 @@ rapidreflexes.loadMenuScene = function(opt_transition){
 	rapidreflexes.UserBestScore = rapidreflexes.getBestScore();
 	
 	// submit this person's highest score to scoreboard API just incase it has never been uploaded before
-	//scoreboard.SubmitScore(rapidreflexes.UserBestScore, this.DeviceGUID, 'StickyBalls');
+	scoreboard.SubmitScore(rapidreflexes.UserBestScore, this.DeviceGUID, 'rapidreflexes');
 	   
 	// add listen to how to play button
 	goog.events.listen(btnHowToPlay, ['touchstart', 'mousedown'], function(e) {
