@@ -22,12 +22,12 @@ version = "1.0.0">
 <preference name="fullscreen" value="true" />
 
 <!-- icons -->
-<!--<icon src="images/icon-mdpi.png" platform="android" qualifier="mdpi" />
+<icon src="images/icon-mdpi.png" platform="android" qualifier="mdpi" />
 <icon src="images/icon-hdpi.png" platform="android" qualifier="hdpi" />
 <icon src="images/icon-xhdpi.png" platform="android" qualifier="xhdpi" />
 <icon src="images/icon-xxhdpi.png" platform="android" qualifier="xxhdpi" />
 <icon src="images/icon-xxxhdpi" platform="android" qualifier="xxxhdpi" />
-<icon src="images/icon-xxxhdpi" platform="android" qualifier="fr-xxhdpi" />-->
+<icon src="images/icon-xxxhdpi" platform="android" qualifier="fr-xxhdpi" />
 
 <!-- Platforms: Customize as needed. -->
 <gap:platforms>
